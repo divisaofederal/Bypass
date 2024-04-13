@@ -30,7 +30,7 @@ def send_requests_threads(url, num_requests):
         threading.Thread(target=send_request, args=(url,)).start()
 
 # URL alvo e número de requisições
-url = 'http://156.146.53.101'
+url = 'http://142.171.195.145/HIT'
 num_requests = 100000
 
 # Enviar requisições usando multiprocessing
