@@ -5,7 +5,6 @@ from selenium.webdriver.chrome.options import Options
 from selenium.webdriver.common.by import By
 from selenium.webdriver.support.ui import WebDriverWait
 from selenium.webdriver.support import expected_conditions as EC
-from selenium.webdriver.common.action_chains import ActionChains
 
 # Configurando as opções do Chrome para executar em modo headless e definindo o User Agent
 chrome_options = Options()
@@ -67,20 +66,28 @@ try:
     # Aguardando 6 segundos antes de clicar no primeiro elemento
     time.sleep(6)
     
-    # Clicando no primeiro elemento
-    first_element = driver.find_element_by_css_selector('a.animated-arrow')
-    first_element.click()
-    
-    print("Clique no elemento Opções bem-sucedido.")
+    # Tentando encontrar e clicar no primeiro elemento
+    try:
+        first_element = WebDriverWait(driver, 10).until(
+            EC.element_to_be_clickable((By.CSS_SELECTOR, 'a.animated-arrow'))
+        )
+        first_element.click()
+        print("Clique no primeiro elemento bem-sucedido.")
+    except Exception as e:
+        print("Falha ao clicar no primeiro elemento:", e)
     
     # Aguardando mais 6 segundos antes de clicar no segundo elemento
     time.sleep(6)
     
-    # Clicando no segundo elemento
-    second_element = driver.find_element_by_xpath('//a[contains(@href, "/panel")]')
-    second_element.click()
-    
-    print("Clique no elemento Painel de Ataque bem-sucedido.")
+    # Tentando encontrar e clicar no segundo elemento
+    try:
+        second_element = WebDriverWait(driver, 10).until(
+            EC.element_to_be_clickable((By.XPATH, '//a[contains(@href, "/panel")]'))
+        )
+        second_element.click()
+        print("Clique no segundo elemento bem-sucedido.")
+    except Exception as e:
+        print("Falha ao clicar no segundo elemento:", e)
     
 except Exception as e:
     print("Falha no login:", e)
