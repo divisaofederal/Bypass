@@ -1,4 +1,5 @@
 from selenium import webdriver
+from selenium.webdriver.common.by import By
 from selenium.webdriver.common.keys import Keys
 import time
 
@@ -12,11 +13,11 @@ driver = webdriver.Chrome(options=options)
 driver.get("https://www.instagram.com/")
 
 # Esperar um momento para garantir que a página seja carregada completamente
-time.sleep(4)
+time.sleep(2)
 
 # Encontrar os campos de login e senha e preenchê-los
-username_field = driver.find_element_by_name('username')
-password_field = driver.find_element_by_name('password')
+username_field = driver.find_element(By.NAME, 'username')
+password_field = driver.find_element(By.NAME, 'password')
 username_field.send_keys('seyzalel')
 password_field.send_keys('Sey17zalel17@$')
 
@@ -24,7 +25,7 @@ password_field.send_keys('Sey17zalel17@$')
 password_field.send_keys(Keys.RETURN)
 
 # Esperar um pouco para o login ser processado
-time.sleep(7)
+time.sleep(5)
 
 # Verificar se o login foi bem sucedido
 if "feed" in driver.current_url:
