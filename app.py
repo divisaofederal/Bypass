@@ -64,6 +64,24 @@ try:
     
     print("Login realizado com sucesso.")
     
+    # Aguardando 6 segundos antes de clicar no primeiro elemento
+    time.sleep(6)
+    
+    # Clicando no primeiro elemento
+    first_element = driver.find_element_by_css_selector('a.animated-arrow')
+    first_element.click()
+    
+    print("Clique no elemento Opções bem-sucedido.")
+    
+    # Aguardando mais 6 segundos antes de clicar no segundo elemento
+    time.sleep(6)
+    
+    # Clicando no segundo elemento
+    second_element = driver.find_element_by_xpath('//a[contains(@href, "/panel")]')
+    second_element.click()
+    
+    print("Clique no elemento Painel de Ataque bem-sucedido.")
+    
 except Exception as e:
     print("Falha no login:", e)
 finally:
