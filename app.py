@@ -5,7 +5,6 @@ from selenium.webdriver.chrome.options import Options
 from selenium.webdriver.common.by import By
 from selenium.webdriver.support.ui import WebDriverWait
 from selenium.webdriver.support import expected_conditions as EC
-from selenium.webdriver.common.action_chains import ActionChains
 
 # Configurando as opções do Chrome para executar em modo headless e definindo o User Agent
 chrome_options = Options()
@@ -28,20 +27,24 @@ driver = webdriver.Chrome(options=chrome_options)
 url = "https://stresse.net/login"
 
 try:
-    # Acessando a página
+    # Acessando a página de login
     driver.get(url)
     
-    # Esperando até que os campos de login e senha estejam presentes
+    # Esperando até que o campo de username esteja presente
     username_field = WebDriverWait(driver, 10).until(
         EC.presence_of_element_located((By.CSS_SELECTOR, 'input[type="text"][placeholder="Username"]'))
     )
+    
+    # Preenchendo o campo de username
+    username_field.send_keys("Selazar")
+    time.sleep(random.uniform(1, 2))  # Atraso entre 1 e 2 segundos
+    
+    # Esperando até que o campo de senha esteja presente
     password_field = WebDriverWait(driver, 10).until(
         EC.presence_of_element_located((By.CSS_SELECTOR, 'input[type="password"][placeholder="Password"]'))
     )
     
-    # Preenchendo os campos de login e senha
-    username_field.send_keys("Selazar")
-    time.sleep(random.uniform(1, 2))  # Atraso entre 1 e 2 segundos
+    # Preenchendo o campo de senha
     password_field.send_keys("17102005")
     time.sleep(random.uniform(1, 2))  # Atraso entre 1 e 2 segundos
     
@@ -64,31 +67,20 @@ try:
     
     print("Login realizado com sucesso.")
     
-    # Aguardando 6 segundos antes de clicar no primeiro elemento
-    time.sleep(6)
+    # Aguardando 5 segundos antes de acessar a página de Painel
+    time.sleep(5)
     
-    # Tentando encontrar e clicar no primeiro elemento
-    try:
-        first_element = WebDriverWait(driver, 10).until(
-            EC.element_to_be_clickable((By.CSS_SELECTOR, 'a.animated-arrow'))
-        )
-        first_element.click()
-        print("Clique no primeiro elemento bem-sucedido.")
-    except Exception as e:
-        print("Falha ao clicar no primeiro elemento:", e)
+    # Acessando a página de Painel
+    driver.get("https://stresse.net/panel#")
     
-    # Aguardando mais 6 segundos antes de clicar no segundo elemento
-    time.sleep(6)
+    # Esperando 3 segundos antes de verificar o título da página
+    time.sleep(3)
     
-    # Tentando encontrar e clicar no segundo elemento
-    try:
-        second_element = WebDriverWait(driver, 10).until(
-            EC.element_to_be_clickable((By.XPATH, '//a[contains(@href, "/panel")]'))
-        )
-        second_element.click()
-        print("Clique no segundo elemento bem-sucedido.")
-    except Exception as e:
-        print("Falha ao clicar no segundo elemento:", e)
+    # Verificando se o título da página contém "Panel"
+    if "Panel" in driver.title:
+        print("Página de Painel acessada com sucesso.")
+    else:
+        print("Falha ao acessar a página de Painel.")
     
 except Exception as e:
     print("Falha no login:", e)
