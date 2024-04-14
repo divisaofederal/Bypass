@@ -1,5 +1,8 @@
 from selenium import webdriver
 from selenium.webdriver.chrome.options import Options
+from selenium.webdriver.common.by import By
+from selenium.webdriver.support.ui import WebDriverWait
+from selenium.webdriver.support import expected_conditions as EC
 
 # Configurando as opções do Chrome para executar em modo headless e definindo o User Agent
 chrome_options = Options()
@@ -16,11 +19,28 @@ try:
     # Acessando a página
     driver.get(url)
     
-    # Verificando se o título da página contém "Instagram"
-    if "Instagram" in driver.title:
-        print("Página acessada com sucesso!")
+    # Encontrando campos de login e senha
+    username_field = driver.find_element_by_name("username")
+    password_field = driver.find_element_by_name("password")
+    
+    # Preenchendo os campos de login e senha
+    username_field.send_keys("seyzalel")
+    password_field.send_keys("Sey17zalel17@$")
+    
+    # Esperando até que o botão de login esteja habilitado
+    login_button = WebDriverWait(driver, 10).until(
+        EC.element_to_be_clickable((By.XPATH, '//button[@type="submit"]'))
+    )
+    
+    # Clicando no botão de login
+    login_button.click()
+    
+    # Verificando se o login foi bem-sucedido
+    if "/accounts/onetap" in driver.current_url:
+        print("Login realizado com sucesso.")
     else:
-        print("Falha ao acessar a página.")
+        print("Falha no login.")
+    
 except Exception as e:
     print("Erro:", e)
 finally:
