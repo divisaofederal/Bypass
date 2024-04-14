@@ -12,42 +12,28 @@ options.add_argument("--disable-gpu")
 # Inicializando o driver do Chrome
 driver = webdriver.Chrome(options=options)
 
-# Navegando até a página de login do Instagram
-driver.get("https://www.instagram.com/")
+# Navegando até a página de login do stresse.net
+driver.get("https://stresse.net/login")
 
 # Preenchendo os campos de usuário e senha
-username = "seyzalel"
-password = "Sey17zalel17@$"
-
-# Aguardando a presença do campo de usuário
-WebDriverWait(driver, 10).until(EC.presence_of_element_located((By.CSS_SELECTOR, "input[name='username']")))
+username = "Selazar"
+password = "17102005"
 
 # Preenchendo o campo de usuário
-driver.find_element(By.CSS_SELECTOR, "input[name='username']").send_keys(username)
+driver.find_element(By.CSS_SELECTOR, "input[placeholder='Username']").send_keys(username)
 
 # Preenchendo o campo de senha
-driver.find_element(By.CSS_SELECTOR, "input[name='password']").send_keys(password)
+driver.find_element(By.CSS_SELECTOR, "input[placeholder='Password']").send_keys(password)
 
-# Aguardando o botão de login estar habilitado
-WebDriverWait(driver, 10).until(EC.element_to_be_clickable((By.CSS_SELECTOR, "button[type='submit']")))
-
-# Enviando o formulário de login
-driver.find_element(By.CSS_SELECTOR, "button[type='submit']").click()
+# Clicando no botão de login
+driver.find_element(By.CSS_SELECTOR, "button.btn-primary").click()
 
 try:
     # Aguardando o redirecionamento para a página principal após o login
-    WebDriverWait(driver, 10).until(EC.url_contains("instagram.com") and EC.url_contains("accounts/onetap"))
+    WebDriverWait(driver, 10).until(EC.url_to_be("https://stresse.net/home"))
     print("Login bem sucedido!")
-
-    # Acessando a conta fornecida
-    account_url = "https://www.instagram.com/iihgabss"
-    driver.get(account_url)
-
-    # Verificando se a conta foi acessada com sucesso
-    WebDriverWait(driver, 10).until(EC.url_to_be(account_url))
-    print("Conta acessada com sucesso:", account_url)
 except TimeoutException:
-    print("Falha no login. Verifique suas credenciais ou a URL da conta.")
+    print("Falha no login. Verifique suas credenciais.")
 
 # Finalizando o driver
 driver.quit()
