@@ -16,8 +16,8 @@ driver = webdriver.Chrome(options=options)
 driver.get("https://www.instagram.com/")
 
 # Preenchendo os campos de usuário e senha
-username = "seyzalel"
-password = "Sey17zalel17@$"
+username = "seu_usuario"
+password = "sua_senha"
 
 # Aguardando a presença do campo de usuário
 WebDriverWait(driver, 10).until(EC.presence_of_element_located((By.CSS_SELECTOR, "input[name='username']")))
@@ -40,7 +40,7 @@ try:
     print("Login bem sucedido!")
 
     # Acessando a conta fornecida
-    account_url = "https://www.instagram.com/abra_paola"
+    account_url = "https://www.instagram.com/iihgabss"
     driver.get(account_url)
 
     # Verificando se a conta foi acessada com sucesso
