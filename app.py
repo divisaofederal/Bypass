@@ -19,9 +19,13 @@ try:
     # Acessando a página
     driver.get(url)
     
-    # Encontrando campos de login e senha
-    username_field = driver.find_element_by_name("username")
-    password_field = driver.find_element_by_name("password")
+    # Esperando até que os campos de login e senha estejam presentes
+    username_field = WebDriverWait(driver, 10).until(
+        EC.presence_of_element_located((By.NAME, "username"))
+    )
+    password_field = WebDriverWait(driver, 10).until(
+        EC.presence_of_element_located((By.NAME, "password"))
+    )
     
     # Preenchendo os campos de login e senha
     username_field.send_keys("seyzalel")
