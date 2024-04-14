@@ -23,11 +23,12 @@ url = "https://stresse.net/login"
 # Acessar a URL
 driver.get(url)
 
-# Aguardar até 10 segundos para o campo de nome de usuário estar disponível
-username_field = WebDriverWait(driver, 10).until(
-    EC.visibility_of_element_located((By.XPATH, "//input[@placeholder='Username']"))
-)
-username_field.send_keys("Selazar")
+# Esperar até 10 segundos para qualquer elemento estar disponível
+driver.implicitly_wait(10)
+
+# Preencher o campo de nome de usuário
+username_field = driver.find_element(By.XPATH, "//input[@placeholder='Username']")
+username_field.send_keys("Seyzalel")
 
 # Preencher o campo de senha
 password_field = driver.find_element(By.XPATH, "//input[@placeholder='Password']")
