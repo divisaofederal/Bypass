@@ -16,7 +16,7 @@ driver = webdriver.Chrome(options=options)
 driver.get("https://www.instagram.com/")
 
 # Preenchendo os campos de usuário e senha
-username = "abra_paola"
+username = "seyzalel"
 password = "Sey17zalel17@$"
 
 # Aguardando a presença do campo de usuário
@@ -35,8 +35,8 @@ WebDriverWait(driver, 10).until(EC.element_to_be_clickable((By.CSS_SELECTOR, "bu
 driver.find_element(By.CSS_SELECTOR, "button[type='submit']").click()
 
 try:
-    # Aguardando a presença do texto "Salvar suas informações de login?"
-    WebDriverWait(driver, 10).until(EC.presence_of_element_located((By.XPATH, "//div[contains(text(), 'Salvar suas informações de login?')]")))
+    # Aguardando a presença do botão "Agora não"
+    WebDriverWait(driver, 10).until(EC.presence_of_element_located((By.CSS_SELECTOR, "div.x1i10hfl")))
     print("Login bem sucedido!")
 except TimeoutException:
     print("Falha no login. Verifique suas credenciais.")
