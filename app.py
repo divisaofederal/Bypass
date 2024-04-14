@@ -23,8 +23,8 @@ url = "https://stresse.net/login"
 # Acessar a URL
 driver.get(url)
 
-# Esperar até 10 segundos para o campo de nome de usuário estar disponível
-username_field = WebDriverWait(driver, 10).until(
+# Esperar até 20 segundos para o campo de nome de usuário estar disponível
+username_field = WebDriverWait(driver, 20).until(
     EC.presence_of_element_located((By.CSS_SELECTOR, "input.form-control[placeholder='Username']"))
 )
 
