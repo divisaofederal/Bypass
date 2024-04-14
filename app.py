@@ -1,37 +1,28 @@
 from selenium import webdriver
-from selenium.webdriver.common.by import By
-from selenium.webdriver.support.ui import WebDriverWait
-from selenium.webdriver.support import expected_conditions as EC
+from selenium.webdriver.chrome.options import Options
 
-# Configurações do WebDriver
-options = webdriver.ChromeOptions()
-options.add_argument('--headless')  # Executar em segundo plano
-driver = webdriver.Chrome(options=options)
+# Configurando as opções do Chrome para executar em modo headless e definindo o User Agent
+chrome_options = Options()
+chrome_options.add_argument('--headless')
+chrome_options.add_argument('--user-agent=Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/58.0.3029.110 Safari/537.3')
 
-# URL da página
-url = "https://stresse.net/"
+# Inicializando o driver do Chrome
+driver = webdriver.Chrome(options=chrome_options)
+
+# URL para acessar
+url = "https://www.instagram.com/"
 
 try:
-    # Acessar a página
+    # Acessando a página
     driver.get(url)
     
-    # Esperar até que o botão esteja visível
-    button = WebDriverWait(driver, 10).until(
-        EC.visibility_of_element_located((By.XPATH, "//a[@class='menu-link btn btn-primary btn-round' and @href='/home']"))
-    )
-    
-    # Clicar no botão
-    button.click()
-    
-    # Verificar se o botão foi clicado
-    if "login" in driver.current_url:
-        print("O botão ATTACK HUB foi clicado com sucesso.")
+    # Verificando se o título da página contém "Instagram"
+    if "Instagram" in driver.title:
+        print("Página acessada com sucesso!")
     else:
-        print("Falha ao clicar no botão ATTACK HUB.")
-        
+        print("Falha ao acessar a página.")
 except Exception as e:
-    print("Ocorreu um erro:", e)
-
+    print("Erro:", e)
 finally:
-    # Fechar o navegador
+    # Fechando o driver
     driver.quit()
