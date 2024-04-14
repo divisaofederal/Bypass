@@ -27,11 +27,11 @@ driver.get(url)
 driver.implicitly_wait(10)
 
 # Preencher o campo de nome de usuário
-username_field = driver.find_element(By.XPATH, "//input[@placeholder='Username']")
+username_field = driver.find_element(By.NAME, "username")
 username_field.send_keys("Seyzalel")
 
 # Preencher o campo de senha
-password_field = driver.find_element(By.XPATH, "//input[@placeholder='Password']")
+password_field = driver.find_element(By.NAME, "password")
 password_field.send_keys("17102005")
 
 # Clicar no botão de login
