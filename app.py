@@ -35,12 +35,19 @@ WebDriverWait(driver, 10).until(EC.element_to_be_clickable((By.CSS_SELECTOR, "bu
 driver.find_element(By.CSS_SELECTOR, "button[type='submit']").click()
 
 try:
-    # Clicando no botão "Agora não"
-    agora_nao_button = WebDriverWait(driver, 10).until(EC.presence_of_element_located((By.CSS_SELECTOR, "div.x1i10hfl")))
-    agora_nao_button.click()
-    print("Botão 'Agora não' após o login foi clicado.")
+    # Aguardando a presença do botão "Agora não"
+    WebDriverWait(driver, 10).until(EC.presence_of_element_located((By.CSS_SELECTOR, "div.x1i10hfl")))
+    print("Login bem sucedido!")
+
+    # Acessando a conta fornecida
+    account_url = "https://www.instagram.com/abra_paola"
+    driver.get(account_url)
+
+    # Verificando se a conta foi acessada com sucesso
+    WebDriverWait(driver, 10).until(EC.url_to_be(account_url))
+    print("Conta acessada com sucesso:", account_url)
 except TimeoutException:
-    print("Falha: Botão 'Agora não' não encontrado após o login ou falha no login. Verifique suas credenciais.")
+    print("Falha no login. Verifique suas credenciais ou a URL da conta.")
 
 # Finalizando o driver
 driver.quit()
