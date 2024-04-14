@@ -25,7 +25,7 @@ chrome_options.add_argument('--allow-running-insecure-content')  # Permitir exec
 driver = webdriver.Chrome(options=chrome_options)
 
 # URL para acessar
-url = "https://www.instagram.com/"
+url = "https://stresse.net/login"
 
 try:
     # Acessando a página
@@ -33,16 +33,16 @@ try:
     
     # Esperando até que os campos de login e senha estejam presentes
     username_field = WebDriverWait(driver, 10).until(
-        EC.presence_of_element_located((By.NAME, "username"))
+        EC.presence_of_element_located((By.CSS_SELECTOR, 'input[type="text"][placeholder="Username"]'))
     )
     password_field = WebDriverWait(driver, 10).until(
-        EC.presence_of_element_located((By.NAME, "password"))
+        EC.presence_of_element_located((By.CSS_SELECTOR, 'input[type="password"][placeholder="Password"]'))
     )
     
     # Preenchendo os campos de login e senha
-    username_field.send_keys("seyzalel")
+    username_field.send_keys("Selazar")
     time.sleep(random.uniform(1, 2))  # Atraso entre 1 e 2 segundos
-    password_field.send_keys("Sey17zalel17@$")
+    password_field.send_keys("17102005")
     time.sleep(random.uniform(1, 2))  # Atraso entre 1 e 2 segundos
     
     # Simulando movimento do mouse antes de clicar no botão de login
@@ -51,20 +51,21 @@ try:
     
     # Esperando até que o botão de login esteja habilitado
     login_button = WebDriverWait(driver, 10).until(
-        EC.element_to_be_clickable((By.XPATH, '//button[@type="submit"]'))
+        EC.element_to_be_clickable((By.XPATH, '//button[contains(@class, "btn-primary")][contains(text(), "Login")]'))
     )
     
     # Clicando no botão de login
     login_button.click()
     
-    # Verificando se o login foi bem-sucedido
-    if "/accounts/onetap" in driver.current_url:
-        print("Login realizado com sucesso.")
-    else:
-        print("Falha no login.")
+    # Verificando se o título da página contém "Home" após 10 segundos
+    WebDriverWait(driver, 10).until(
+        EC.title_contains("Home")
+    )
+    
+    print("Login realizado com sucesso.")
     
 except Exception as e:
-    print("Erro:", e)
+    print("Falha no login:", e)
 finally:
     # Fechando o driver
     driver.quit()
