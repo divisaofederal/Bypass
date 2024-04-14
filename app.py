@@ -5,6 +5,7 @@ from selenium.webdriver.chrome.options import Options
 from selenium.webdriver.common.by import By
 from selenium.webdriver.support.ui import WebDriverWait
 from selenium.webdriver.support import expected_conditions as EC
+from selenium.webdriver.common.action_chains import ActionChains  # Importando ActionChains
 
 # Configurando as opções do Chrome para executar em modo headless e definindo o User Agent
 chrome_options = Options()
@@ -30,7 +31,7 @@ try:
     # Acessando a página de login
     driver.get(url)
     
-    # Esperando até que o campo de username esteja presente
+    # Esperando até que os campos de login e senha estejam presentes
     username_field = WebDriverWait(driver, 10).until(
         EC.presence_of_element_located((By.CSS_SELECTOR, 'input[type="text"][placeholder="Username"]'))
     )
