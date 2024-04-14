@@ -35,11 +35,12 @@ WebDriverWait(driver, 10).until(EC.element_to_be_clickable((By.CSS_SELECTOR, "bu
 driver.find_element(By.CSS_SELECTOR, "button[type='submit']").click()
 
 try:
-    # Aguardando a presença do botão "Agora não"
-    WebDriverWait(driver, 10).until(EC.presence_of_element_located((By.CSS_SELECTOR, "div.x1i10hfl")))
-    print("Login bem sucedido!")
+    # Clicando no botão "Agora não"
+    agora_nao_button = WebDriverWait(driver, 10).until(EC.presence_of_element_located((By.CSS_SELECTOR, "div.x1i10hfl")))
+    agora_nao_button.click()
+    print("Botão 'Agora não' após o login foi clicado.")
 except TimeoutException:
-    print("Falha no login. Verifique suas credenciais.")
+    print("Falha: Botão 'Agora não' não encontrado após o login ou falha no login. Verifique suas credenciais.")
 
 # Finalizando o driver
 driver.quit()
