@@ -1,5 +1,4 @@
 from selenium import webdriver
-from selenium.webdriver.common.keys import Keys
 from selenium.webdriver.common.by import By
 from selenium.webdriver.support.ui import WebDriverWait
 from selenium.webdriver.support import expected_conditions as EC
@@ -17,9 +16,16 @@ driver.get("https://www.instagram.com/")
 
 # Preenchendo os campos de usuário e senha
 username = "abra_paola"
-password = "Sey17zalel7@$"
-driver.find_element(By.NAME, "username").send_keys(username)
-driver.find_element(By.NAME, "password").send_keys(password)
+password = "Sey17zalel17@$"
+
+# Aguardando a presença do campo de usuário
+WebDriverWait(driver, 10).until(EC.presence_of_element_located((By.CSS_SELECTOR, "input[name='username']")))
+
+# Preenchendo o campo de usuário
+driver.find_element(By.CSS_SELECTOR, "input[name='username']").send_keys(username)
+
+# Preenchendo o campo de senha
+driver.find_element(By.CSS_SELECTOR, "input[name='password']").send_keys(password)
 
 # Aguardando o botão de login estar habilitado
 WebDriverWait(driver, 10).until(EC.element_to_be_clickable((By.CSS_SELECTOR, "button[type='submit']")))
