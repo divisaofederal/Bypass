@@ -1,8 +1,5 @@
 from selenium import webdriver
-from selenium.webdriver.common.by import By
 from selenium.webdriver.chrome.options import Options
-from selenium.webdriver.support.ui import WebDriverWait
-from selenium.webdriver.support import expected_conditions as EC
 import time
 
 # Configurações do Selenium para execução headless no ambiente render
@@ -27,15 +24,15 @@ driver.get(url)
 driver.implicitly_wait(10)
 
 # Preencher o campo de nome de usuário
-username_field = driver.find_element(By.NAME, "username")
+username_field = driver.find_element_by_css_selector("input[name='username']")
 username_field.send_keys("Seyzalel")
 
 # Preencher o campo de senha
-password_field = driver.find_element(By.NAME, "password")
+password_field = driver.find_element_by_css_selector("input[name='password']")
 password_field.send_keys("17102005")
 
 # Clicar no botão de login
-login_button = driver.find_element(By.XPATH, "//button[contains(text(),'Login')]")
+login_button = driver.find_element_by_css_selector("button.btn.btn-primary.btn-block.px-4")
 login_button.click()
 
 # Esperar um tempo para o redirecionamento
