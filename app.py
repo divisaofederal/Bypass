@@ -24,7 +24,7 @@ try:
     button.click()
     
     # Verificar se o botão foi clicado
-    if "home" in driver.current_url:
+    if "login" in driver.current_url:
         print("O botão ATTACK HUB foi clicado com sucesso.")
     else:
         print("Falha ao clicar no botão ATTACK HUB.")
